@@ -34,8 +34,8 @@ public class PatientServiceTest {
     @DisplayName("환자 생성 성공 테스트")
     public void createPatientTest(){
         // given
+        Long hospitalId = 1L;
         CreatePatientRequest createPatientRequest = new CreatePatientRequest(
-                1L,
                 "환자1",
                 "Man1",
                 "000101",
@@ -47,10 +47,10 @@ public class PatientServiceTest {
         when(hospitalRepository.findById(any())).thenReturn(Optional.of(hospital));
         when(patientRepository.save(any(Patient.class))).thenReturn(Patient.of());
 
-        patientService.createPatient(createPatientRequest);
+        patientService.createPatient(hospitalId,createPatientRequest);
 
         // then
-        verify(hospitalRepository).findById(createPatientRequest.getHospitalId());
+        verify(hospitalRepository).findById(hospitalId);
         verify(patientRepository).save(any(Patient.class));
     }
 

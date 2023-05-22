@@ -23,8 +23,8 @@ public class PatientService {
     private final HospitalRepository hospitalRepository;
 
     @Transactional
-    public void createPatient(CreatePatientRequest createPatientRequest) {
-        Hospital hospital = hospitalRepository.findById(createPatientRequest.getHospitalId())
+    public void createPatient(Long hospitalId, CreatePatientRequest createPatientRequest) {
+        Hospital hospital = hospitalRepository.findById(hospitalId)
                 .orElseThrow(NoSuchElementException::new);
 
         String randomString = UuidGenerator.generateUuid(DomainType.P);
