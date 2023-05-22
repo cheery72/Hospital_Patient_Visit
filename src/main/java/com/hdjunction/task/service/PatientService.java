@@ -7,26 +7,23 @@ import com.hdjunction.task.repository.HospitalRepository;
 import com.hdjunction.task.repository.PatientRepository;
 import com.hdjunction.task.common.DomainType;
 import com.hdjunction.task.common.UuidGenerator;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-@Transactional(readOnly = true)
 @Service
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class PatientService {
 
     private final PatientRepository patientRepository;
     private final HospitalRepository hospitalRepository;
 
-    public PatientService(PatientRepository patientRepository, HospitalRepository hospitalRepository) {
-        this.patientRepository = patientRepository;
-        this.hospitalRepository = hospitalRepository;
-    }
-
     @Transactional
-    public void createPatient(CreatePatientRequest createPatientRequest){
+    public void createPatient(CreatePatientRequest createPatientRequest) {
         Hospital hospital = hospitalRepository.findById(createPatientRequest.getHospitalId())
                 .orElseThrow(NoSuchElementException::new);
 
@@ -34,16 +31,16 @@ public class PatientService {
 
         Optional<Patient> byRegistrationNumber = patientRepository.findByRegistrationNumber(randomString);
 
-        if(byRegistrationNumber.isPresent()){
+        if (byRegistrationNumber.isPresent()) {
             randomString = UuidGenerator.generateUuid(DomainType.P);
             byRegistrationNumber = patientRepository.findByRegistrationNumber(randomString);
 
-            if(byRegistrationNumber.isPresent()){
+            if (byRegistrationNumber.isPresent()) {
                 throw new RuntimeException();
             }
         }
 
-        Patient patient = Patient.build(createPatientRequest,hospital,randomString);
+        Patient patient = Patient.of(createPatientRequest, hospital, randomString);
 
         patientRepository.save(patient);
     }

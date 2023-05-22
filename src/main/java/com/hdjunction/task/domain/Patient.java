@@ -1,12 +1,15 @@
 package com.hdjunction.task.domain;
 
 import com.hdjunction.task.dto.CreatePatientRequest;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Patient {
 
     @Id
@@ -36,7 +39,8 @@ public class Patient {
     @OneToMany(mappedBy = "patient")
     private List<Visit> visits = new ArrayList<>();
 
-    public Patient(Long id, Hospital hospital, String name, String registrationNumber, String genderCode, String birthDate, String phoneNumber, List<Visit> visits) {
+    @Builder
+    private Patient(Long id, Hospital hospital, String name, String registrationNumber, String genderCode, String birthDate, String phoneNumber, List<Visit> visits) {
         this.id = id;
         this.hospital = hospital;
         this.name = name;
@@ -47,55 +51,18 @@ public class Patient {
         this.visits = visits;
     }
 
-    protected Patient() {
-
+    public static Patient of(CreatePatientRequest createPatientRequest, Hospital hospital, String registrationNumber) {
+        return Patient.builder()
+                .hospital(hospital)
+                .name(createPatientRequest.getPatientName())
+                .registrationNumber(registrationNumber)
+                .genderCode(createPatientRequest.getGenderCode())
+                .birthDate(createPatientRequest.getBirthDate())
+                .phoneNumber(createPatientRequest.getPhoneNumber())
+                .build();
     }
 
-    public Patient(Hospital hospital, String patientName, String registrationNumber, String genderCode, String birthDate, String phoneNumber) {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Hospital getHospital() {
-        return hospital;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getRegistrationNumber() {
-        return registrationNumber;
-    }
-
-    public String getGenderCode() {
-        return genderCode;
-    }
-
-    public String getBirthDate() {
-        return birthDate;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public List<Visit> getVisits() {
-        return visits;
-    }
-
-    public static Patient build(CreatePatientRequest createPatientRequest, Hospital hospital, String registrationNumber){
-        return new Patient(hospital,
-                        createPatientRequest.getPatientName(),
-                        registrationNumber,
-                        createPatientRequest.getGenderCode(),
-                        createPatientRequest.getBirthDate(),
-                        createPatientRequest.getPhoneNumber());
-    }
-
-    public static Patient of(){
+    public static Patient of() {
         return new Patient();
     }
 }

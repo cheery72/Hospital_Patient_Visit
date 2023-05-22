@@ -1,10 +1,18 @@
 package com.hdjunction.task.domain;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
 @Entity
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CodeGroup {
 
     @Id
@@ -17,25 +25,4 @@ public class CodeGroup {
     @Column(length = 10, nullable = false)
     private String description;
 
-    public CodeGroup(String codeGroup, String name, String description) {
-        this.codeGroup = codeGroup;
-        this.name = name;
-        this.description = description;
-    }
-
-    public CodeGroup() {
-
-    }
-
-    public String getCodeGroup() {
-        return codeGroup;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
 }

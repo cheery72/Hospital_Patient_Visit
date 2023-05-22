@@ -10,7 +10,7 @@ class UuidGeneratorTest {
 
     @Test
     @DisplayName("유니크 키 테스트")
-    public void test() {
+    public void generateUUIDTest() {
         // given, when
         String registrationNumber = UuidGenerator.generateUuid(DomainType.P);
 
