@@ -63,4 +63,8 @@ public class Hospital {
     public List<Visit> getVisits() {
         return visits;
     }
+
+    public static Hospital of(){
+        return new Hospital();
+    }
 }

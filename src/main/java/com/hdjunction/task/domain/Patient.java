@@ -1,5 +1,7 @@
 package com.hdjunction.task.domain;
 
+import com.hdjunction.task.dto.CreatePatientRequest;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +51,9 @@ public class Patient {
 
     }
 
+    public Patient(Hospital hospital, String patientName, String registrationNumber, String genderCode, String birthDate, String phoneNumber) {
+    }
+
     public Long getId() {
         return id;
     }
@@ -79,5 +84,18 @@ public class Patient {
 
     public List<Visit> getVisits() {
         return visits;
+    }
+
+    public static Patient build(CreatePatientRequest createPatientRequest, Hospital hospital, String registrationNumber){
+        return new Patient(hospital,
+                        createPatientRequest.getPatientName(),
+                        registrationNumber,
+                        createPatientRequest.getGenderCode(),
+                        createPatientRequest.getBirthDate(),
+                        createPatientRequest.getPhoneNumber());
+    }
+
+    public static Patient of(){
+        return new Patient();
     }
 }
