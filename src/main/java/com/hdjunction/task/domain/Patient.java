@@ -10,7 +10,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Patient {
+public class Patient extends BaseTime{
 
     @Id
     @Column(name = "patient_id")
