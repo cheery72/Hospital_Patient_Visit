@@ -1,6 +1,7 @@
 package com.hdjunction.task.controller;
 
 import com.hdjunction.task.dto.CreatePatientRequest;
+import com.hdjunction.task.dto.UpdatePatientRequest;
 import com.hdjunction.task.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,4 +28,17 @@ public class PatientController {
                 .status(HttpStatus.CREATED)
                 .build();
     }
+
+    @PatchMapping("/{patientId}/patients")
+    public ResponseEntity<Object> updatePatient(
+            @PathVariable Long patientId,
+            @RequestBody @Valid UpdatePatientRequest updatePatientRequest) {
+
+        patientService.updatePatient(patientId,updatePatientRequest);
+
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
+    }
+
 }

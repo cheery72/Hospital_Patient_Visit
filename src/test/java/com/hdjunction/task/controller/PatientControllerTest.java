@@ -2,6 +2,7 @@ package com.hdjunction.task.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hdjunction.task.dto.CreatePatientRequest;
+import com.hdjunction.task.dto.UpdatePatientRequest;
 import com.hdjunction.task.service.PatientService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,6 +19,7 @@ import org.springframework.web.filter.CharacterEncodingFilter;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,7 +42,7 @@ class PatientControllerTest {
     private final String BASE_URL = "/api/v1/";
 
     private final Long hospitalId = 1L;
-
+    private final Long patientId = 1L;
 
     @BeforeEach()
     public void setup() {
@@ -107,4 +109,61 @@ class PatientControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    @DisplayName("환자 수정 성공 테스트")
+    public void updatePatientTest() throws Exception {
+        String body = objectMapper.writeValueAsString(
+                new UpdatePatientRequest(
+                        "환자1",
+                        "Man1",
+                        "000101",
+                        "010-0000-0000")
+        );
+
+        doNothing().when(patientService).updatePatient(any(), any());
+
+        mockMvc.perform(patch(BASE_URL+patientId+"/patients")
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+    }
+
+
+    @Test
+    @DisplayName("환자 수정 실패 테스트, UpdatePatientRequest가 empty일 경우")
+    public void updatePatientFailTestWhenUpdatePatientRequestIsEmpty() throws Exception {
+        String body = objectMapper.writeValueAsString(
+                new UpdatePatientRequest(
+                        "",
+                        "",
+                        "",
+                        "")
+        );
+
+        doNothing().when(patientService).updatePatient(any(), any());
+
+        mockMvc.perform(patch(BASE_URL+patientId+"/patients")
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("환자 수정 실패 테스트, UpdatePatientRequest가 null일 경우")
+    public void updatePatientFailTestWhenUpdatePatientRequestIsNull() throws Exception {
+        String body = objectMapper.writeValueAsString(
+                new UpdatePatientRequest(
+                        null,
+                        null,
+                        null,
+                        null)
+        );
+
+        doNothing().when(patientService).updatePatient(any(), any());
+
+        mockMvc.perform(patch(BASE_URL+patientId+"/patients")
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
 }
