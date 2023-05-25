@@ -40,8 +40,10 @@ public class Patient extends BaseTime{
     @OneToMany(mappedBy = "patient")
     private List<Visit> visits = new ArrayList<>();
 
+    private boolean deleted = false;
+
     @Builder
-    private Patient(Long id, Hospital hospital, String name, String registrationNumber, String genderCode, String birthDate, String phoneNumber, List<Visit> visits) {
+    public Patient(Long id, Hospital hospital, String name, String registrationNumber, String genderCode, String birthDate, String phoneNumber, List<Visit> visits, boolean deleted) {
         this.id = id;
         this.hospital = hospital;
         this.name = name;
@@ -50,6 +52,7 @@ public class Patient extends BaseTime{
         this.birthDate = birthDate;
         this.phoneNumber = phoneNumber;
         this.visits = visits;
+        this.deleted = deleted;
     }
 
     public static Patient of(CreatePatientRequest createPatientRequest, Hospital hospital, String registrationNumber) {

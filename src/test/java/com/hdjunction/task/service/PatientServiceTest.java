@@ -66,7 +66,7 @@ public class PatientServiceTest {
 
         // when
         when(hospitalRepository.findById(any())).thenReturn(Optional.of(hospital));
-        when(patientRepository.findByRegistrationNumber(anyString())).thenReturn(Optional.empty());
+        when(patientRepository.findByRegistrationNumberAndDeletedFalse(anyString())).thenReturn(Optional.empty());
         when(patientRepository.save(any(Patient.class))).thenReturn(patient);
 
         patientService.createPatient(hospitalId,createPatientRequest);
@@ -76,8 +76,9 @@ public class PatientServiceTest {
         verify(patientRepository).save(patientCaptor.capture());
         Patient savedPatient = patientCaptor.getValue();
         assertTrue(savedPatient.getRegistrationNumber().startsWith("P_"));
+        assertFalse(savedPatient.isDeleted());
         verify(hospitalRepository).findById(hospitalId);
-        verify(patientRepository).findByRegistrationNumber(anyString());
+        verify(patientRepository).findByRegistrationNumberAndDeletedFalse(anyString());
         verify(patientRepository).save(any(Patient.class));
     }
 
@@ -157,13 +158,13 @@ public class PatientServiceTest {
         Long patientId = 1L;
 
         // when
-        when(patientRepository.findById(any())).thenReturn(Optional.empty());
+        when(patientRepository.findByIdAndDeletedFalse(any())).thenReturn(Optional.empty());
         ClientException exception = Assertions.assertThrows(ClientException.class,
                 () -> patientService.updatePatient(patientId, Mockito.mock(UpdatePatientRequest.class)));
 
         // then
         assertEquals(ErrorCode.NOT_FOUND_PATIENT, exception.getErrorCode());
-        verify(patientRepository, Mockito.times(1)).findById(patientId);
+        verify(patientRepository, Mockito.times(1)).findByIdAndDeletedFalse(patientId);
     }
 
     @Test
@@ -179,13 +180,13 @@ public class PatientServiceTest {
                 "010-0000-0000");
 
         // then
-        when(patientRepository.findById(any())).thenReturn(Optional.of(patient));
+        when(patientRepository.findByIdAndDeletedFalse(any())).thenReturn(Optional.of(patient));
         patientService.updatePatient(patientId,updatePatientRequest);
 
         assertEquals(updatePatientRequest.getPatientName(), patient.getName());
         assertEquals(updatePatientRequest.getBirthDate(), patient.getBirthDate());
         assertEquals(updatePatientRequest.getGenderCode(), patient.getGenderCode());
         assertEquals(updatePatientRequest.getPhoneNumber(), patient.getPhoneNumber());
-        verify(patientRepository).findById(patientId);
+        verify(patientRepository).findByIdAndDeletedFalse(patientId);
     }
 }

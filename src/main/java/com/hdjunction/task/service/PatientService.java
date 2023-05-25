@@ -43,7 +43,7 @@ public class PatientService {
     }
 
     private Patient findPatientId(Long patientId){
-        return patientRepository.findById(patientId)
+        return patientRepository.findByIdAndDeletedFalse(patientId)
                 .orElseThrow(() -> new ClientException(ErrorCode.NOT_FOUND_PATIENT));
     }
 
@@ -63,7 +63,7 @@ public class PatientService {
     }
 
     private Optional<Patient> findPatientByRegistrationNumber(String randomString){
-        return patientRepository.findByRegistrationNumber(randomString);
+        return patientRepository.findByRegistrationNumberAndDeletedFalse(randomString);
     }
 
     private boolean isPatientExistByRegistrationNumber(String registrationNumber) {
