@@ -73,6 +73,10 @@ public class Patient extends BaseTime{
         this.phoneNumber = updatePatientRequest.getPhoneNumber();
     }
 
+    public void setDeleted(){
+        this.deleted = true;
+    }
+
     public static Patient of() {
         return new Patient();
     }

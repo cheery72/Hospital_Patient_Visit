@@ -41,4 +41,15 @@ public class PatientController {
                 .build();
     }
 
+    @DeleteMapping("/{patientId}/patients")
+    public ResponseEntity<Object> deletePatient(
+            @PathVariable Long patientId) {
+
+        patientService.deletePatient(patientId);
+
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
+    }
+
 }

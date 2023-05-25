@@ -42,6 +42,13 @@ public class PatientService {
         patient.setPatientInfo(updatePatientRequest);
     }
 
+    @Transactional
+    public void deletePatient(Long patientId) {
+        Patient patient = findPatientId(patientId);
+
+        patient.setDeleted();
+    }
+
     private Patient findPatientId(Long patientId){
         return patientRepository.findByIdAndDeletedFalse(patientId)
                 .orElseThrow(() -> new ClientException(ErrorCode.NOT_FOUND_PATIENT));
