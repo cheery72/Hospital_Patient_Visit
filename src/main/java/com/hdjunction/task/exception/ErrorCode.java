@@ -5,7 +5,8 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum ErrorCode {
-    NOT_FOUND_HOSPITAL(-1000,"존재하지 않는 병원 입니다.",HttpStatus.NOT_FOUND);
+    NOT_FOUND_HOSPITAL(-1000,"존재하지 않는 병원 입니다.",HttpStatus.NOT_FOUND),
+    NOT_FOUND_PATIENT(-1001,"존재하지 않는 환자 입니다.",HttpStatus.NOT_FOUND);
 
 
     ErrorCode(Integer code, String message, HttpStatus httpStatus) {

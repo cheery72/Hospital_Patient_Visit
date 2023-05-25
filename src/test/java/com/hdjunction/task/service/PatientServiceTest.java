@@ -5,6 +5,7 @@ import com.hdjunction.task.common.UuidGenerator;
 import com.hdjunction.task.domain.Hospital;
 import com.hdjunction.task.domain.Patient;
 import com.hdjunction.task.dto.CreatePatientRequest;
+import com.hdjunction.task.dto.UpdatePatientRequest;
 import com.hdjunction.task.exception.ClientException;
 import com.hdjunction.task.exception.ErrorCode;
 import com.hdjunction.task.repository.HospitalRepository;
@@ -20,8 +21,14 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.util.Optional;
+import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -44,6 +51,9 @@ public class PatientServiceTest {
             "Man1",
             "000101",
             "010-0000-0000");
+
+    private final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+    private final Validator validator = validatorFactory.getValidator();
 
     @Test
     @DisplayName("환자 생성 성공 테스트")
@@ -73,7 +83,7 @@ public class PatientServiceTest {
 
     @Test
     @DisplayName("요청 받은 병원을 찾을 수 없을 경우 exception 테스트")
-    public void createPatientNotFoundHospital_ExceptionTest() {
+    public void findPatientNotFoundHospital_ExceptionTest() {
         // given
         Long hospitalId = 1L;
 
@@ -103,4 +113,79 @@ public class PatientServiceTest {
         assertNotEquals(registrationNumber, uniqueRegistrationNumber);
     }
 
+    @Test
+    @DisplayName("UpdatePatientRequest Validation Empty 테스트")
+    public void updatePatientRequest_EmptyTest(){
+        // given
+        UpdatePatientRequest request = new UpdatePatientRequest(
+                "",
+                "",
+                "",
+                ""
+        );
+
+        // when
+        Set<ConstraintViolation<UpdatePatientRequest>> violations = validator.validate(request);
+
+        // then
+        assertThat(violations).hasSize(4);
+
+    }
+
+    @Test
+    @DisplayName("UpdatePatientRequest Validation Null 테스트")
+    public void updatePatientRequest_NullTest(){
+        // given
+        UpdatePatientRequest request = new UpdatePatientRequest(
+                null,
+                null,
+                null,
+                null
+        );
+
+        // when
+        Set<ConstraintViolation<UpdatePatientRequest>> violations = validator.validate(request);
+
+        // then
+        assertThat(violations).hasSize(4);
+    }
+
+    @Test
+    @DisplayName("요청 받은 환자를 찾을 수 없을 경우 exception 테스트")
+    public void findPatientNotFoundPatient_ExceptionTest() {
+        // given
+        Long patientId = 1L;
+
+        // when
+        when(patientRepository.findById(any())).thenReturn(Optional.empty());
+        ClientException exception = Assertions.assertThrows(ClientException.class,
+                () -> patientService.updatePatient(patientId, Mockito.mock(UpdatePatientRequest.class)));
+
+        // then
+        assertEquals(ErrorCode.NOT_FOUND_PATIENT, exception.getErrorCode());
+        verify(patientRepository, Mockito.times(1)).findById(patientId);
+    }
+
+    @Test
+    @DisplayName("환자 정보 수정 기능 테스트")
+    public void updatePatientTest() {
+        // given
+        Long patientId = 1L;
+        Patient patient = Patient.of();
+        UpdatePatientRequest updatePatientRequest = new UpdatePatientRequest(
+                "환자1",
+                "Man1",
+                "000101",
+                "010-0000-0000");
+
+        // then
+        when(patientRepository.findById(any())).thenReturn(Optional.of(patient));
+        patientService.updatePatient(patientId,updatePatientRequest);
+
+        assertEquals(updatePatientRequest.getPatientName(), patient.getName());
+        assertEquals(updatePatientRequest.getBirthDate(), patient.getBirthDate());
+        assertEquals(updatePatientRequest.getGenderCode(), patient.getGenderCode());
+        assertEquals(updatePatientRequest.getPhoneNumber(), patient.getPhoneNumber());
+        verify(patientRepository).findById(patientId);
+    }
 }

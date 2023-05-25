@@ -1,6 +1,7 @@
 package com.hdjunction.task.domain;
 
 import com.hdjunction.task.dto.CreatePatientRequest;
+import com.hdjunction.task.dto.UpdatePatientRequest;
 import lombok.*;
 
 import javax.persistence.*;
@@ -60,6 +61,13 @@ public class Patient extends BaseTime{
                 .birthDate(createPatientRequest.getBirthDate())
                 .phoneNumber(createPatientRequest.getPhoneNumber())
                 .build();
+    }
+
+    public void setPatientInfo(UpdatePatientRequest updatePatientRequest) {
+        this.name = updatePatientRequest.getPatientName();
+        this.genderCode = updatePatientRequest.getGenderCode();
+        this.birthDate = updatePatientRequest.getBirthDate();
+        this.phoneNumber = updatePatientRequest.getPhoneNumber();
     }
 
     public static Patient of() {
