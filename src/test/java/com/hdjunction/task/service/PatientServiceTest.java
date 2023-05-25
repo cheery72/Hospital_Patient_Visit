@@ -32,7 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class PatientServiceTest {
@@ -189,4 +190,21 @@ public class PatientServiceTest {
         assertEquals(updatePatientRequest.getPhoneNumber(), patient.getPhoneNumber());
         verify(patientRepository).findByIdAndDeletedFalse(patientId);
     }
+
+    @Test
+    @DisplayName("환자 데이터 삭제")
+    public void patientSetDeleted() {
+        // given
+        Long patientId = 1L;
+        Patient patient = Patient.of();
+
+        // when
+        when(patientRepository.findByIdAndDeletedFalse(any())).thenReturn(Optional.of(patient));
+        patientService.deletePatient(patientId);
+
+        assertTrue(patient.isDeleted());
+        verify(patientRepository).findByIdAndDeletedFalse(patientId);
+        verify(patientRepository, Mockito.times(1)).findByIdAndDeletedFalse(patientId);
+    }
+
 }
