@@ -5,6 +5,7 @@ import com.hdjunction.task.common.UuidGenerator;
 import com.hdjunction.task.domain.Hospital;
 import com.hdjunction.task.domain.Patient;
 import com.hdjunction.task.dto.CreatePatientRequest;
+import com.hdjunction.task.dto.PatientDetailsResponse;
 import com.hdjunction.task.dto.PatientWithVisitsResponse;
 import com.hdjunction.task.dto.UpdatePatientRequest;
 import com.hdjunction.task.exception.ClientException;
@@ -12,6 +13,8 @@ import com.hdjunction.task.exception.ErrorCode;
 import com.hdjunction.task.repository.HospitalRepository;
 import com.hdjunction.task.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +55,10 @@ public class PatientService {
 
     public PatientWithVisitsResponse findPatientWithVisits(Long patientId) {
         return patientRepository.findByIdWithVisits(patientId);
+    }
+
+    public Page<PatientDetailsResponse> findPatientDetails(String searchParams,String content,Pageable pageable) {
+        return patientRepository.findByPatientDetails(searchParams,content, pageable);
     }
 
     private Patient findPatientId(Long patientId){

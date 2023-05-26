@@ -3,6 +3,7 @@ package com.hdjunction.task.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hdjunction.task.domain.Hospital;
 import com.hdjunction.task.dto.CreatePatientRequest;
+import com.hdjunction.task.dto.PatientDetailsResponse;
 import com.hdjunction.task.dto.PatientWithVisitsResponse;
 import com.hdjunction.task.dto.PatientWithVisitsResponse.VisitDetailsDTO;
 import com.hdjunction.task.dto.UpdatePatientRequest;
@@ -15,6 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -24,8 +29,10 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -241,4 +248,56 @@ class PatientControllerTest {
                 .andExpect(jsonPath("$.visitDetails[0].visitStatusCode").value(visitStatusCode))
                 .andDo(print());
     }
+
+    @Test
+    @DisplayName("환자 전체 목록 조회 테스트")
+    public void findPatientDetailsTest() throws Exception {
+        // given
+        String searchParams = "name";
+        String content = "이름";
+        Pageable pageable = PageRequest.of(0, 2);
+
+        String patientName = "환자";
+        String patientRegistrationNumber = null;
+        String patientBirthDate = null;
+
+        Long patientId = 1L;
+        String patientGenderCode = "M";
+        String patientPhoneNumber = "123-456-7890";
+        LocalDateTime visitDateTime = LocalDateTime.now();
+
+        String formattedVisitDate = visitDateTime.toLocalDate().toString();
+        PatientDetailsResponse patientDetailsResponse = PatientDetailsResponse.builder()
+                .patientId(patientId)
+                .patientName(patientName)
+                .patientRegistrationNumber(patientRegistrationNumber)
+                .patientGenderCode(patientGenderCode)
+                .patientBirthDate(patientBirthDate)
+                .patientPhoneNumber(patientPhoneNumber)
+                .recentVisit(formattedVisitDate)
+                .build();
+
+        List<PatientDetailsResponse> list = new ArrayList<>();
+        list.add(patientDetailsResponse);
+        list.add(patientDetailsResponse);
+
+        Page<PatientDetailsResponse> expectedPage = new PageImpl<>(list, pageable, list.size());
+
+        // when
+        when(patientService.findPatientDetails(searchParams, content, pageable)).thenReturn(expectedPage);
+
+        // then
+        mockMvc.perform(get(BASE_URL+"/{searchParams}/patients/search", searchParams)
+                        .param("content", content)
+                        .param("page", "0")
+                        .param("size", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.content[0].patientName").value(patientName))
+                .andExpect(jsonPath("$.content[0].patientPhoneNumber").value(patientPhoneNumber))
+                .andExpect(jsonPath("$.content[0].recentVisit").value(String.valueOf(visitDateTime.toLocalDate())))
+                .andReturn();
+    }
+
 }
