@@ -1,10 +1,13 @@
 package com.hdjunction.task.controller;
 
 import com.hdjunction.task.dto.CreatePatientRequest;
+import com.hdjunction.task.dto.PatientDetailsResponse;
 import com.hdjunction.task.dto.PatientWithVisitsResponse;
 import com.hdjunction.task.dto.UpdatePatientRequest;
 import com.hdjunction.task.service.PatientService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -59,5 +62,15 @@ public class PatientController {
 
         return ResponseEntity
                 .ok(patientService.findPatientWithVisits(patientId));
+    }
+
+    @GetMapping("/{searchParams}/patients/search")
+    public ResponseEntity<Page<PatientDetailsResponse>> findPatientDetails(
+            @PathVariable String searchParams,
+            @RequestParam(required = false) String content,
+            Pageable pageable) {
+
+        return ResponseEntity
+                .ok(patientService.findPatientDetails(searchParams,content, pageable));
     }
 }

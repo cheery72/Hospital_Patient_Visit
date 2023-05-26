@@ -6,6 +6,7 @@ import com.hdjunction.task.domain.Hospital;
 import com.hdjunction.task.domain.Patient;
 import com.hdjunction.task.domain.Visit;
 import com.hdjunction.task.dto.CreatePatientRequest;
+import com.hdjunction.task.dto.PatientDetailsResponse;
 import com.hdjunction.task.dto.PatientWithVisitsResponse;
 import com.hdjunction.task.dto.PatientWithVisitsResponse.VisitDetailsDTO;
 import com.hdjunction.task.dto.UpdatePatientRequest;
@@ -22,6 +23,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import javax.validation.ConstraintViolation;
@@ -274,4 +279,115 @@ public class PatientServiceTest {
         Assertions.assertEquals(visitStatusCode, visitDetails.getVisitStatusCode());
 
     }
+
+
+    @Test
+    @DisplayName("환자 목록 조회 테스트, patientName 선택할 경우")
+    public void findPatientDetails_PatientName_Test() {
+
+        // given
+        String searchParams = "name";
+        String patientName = "환자";
+        Pageable pageable = PageRequest.of(0, 2);
+
+        PatientDetailsResponse patientDetailsResponse = createPatientDetailsResponse();
+        List<PatientDetailsResponse> patientDetailsResponses = createPatientDetailListResponse(patientDetailsResponse);
+
+
+        // when
+        when(patientRepository.findByPatientDetails(eq(searchParams),eq(patientName),any(Pageable.class)))
+                .thenReturn(new PageImpl<>(patientDetailsResponses));
+
+        Page<PatientDetailsResponse> result = patientService.findPatientDetails(searchParams,patientName,pageable);
+
+        // then
+        assertThat(result.getContent()).isEqualTo(patientDetailsResponses);
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(result.getContent().get(0).getPatientName()).isEqualTo(patientName);
+        assertThat(result.getContent().get(0).getPatientGenderCode()).isEqualTo(patientDetailsResponse.getPatientGenderCode());
+        assertThat(result.getContent().get(0).getPatientPhoneNumber()).isEqualTo(patientDetailsResponse.getPatientPhoneNumber());
+        assertThat(result.getContent().get(0).getRecentVisit()).isEqualTo(String.valueOf(patientDetailsResponse.getRecentVisit()));
+    }
+
+
+    @Test
+    @DisplayName("환자 목록 조회 테스트, patientRegistrationNumber 선택할 경우")
+    public void findPatientDetails_PatientRegistrationNumber_Test() {
+        // given
+        String searchParams = "registrationNumber";
+        String patientRegistrationNumber = "123456789";
+        Pageable pageable = PageRequest.of(0, 2);
+
+        PatientDetailsResponse patientDetailsResponse = createPatientDetailsResponse();
+        List<PatientDetailsResponse> patientDetailsResponses = createPatientDetailListResponse(patientDetailsResponse);
+
+        // when
+        when(patientRepository.findByPatientDetails(eq(searchParams),eq(patientRegistrationNumber),any(Pageable.class)))
+                .thenReturn(new PageImpl<>(patientDetailsResponses));
+
+        Page<PatientDetailsResponse> result = patientService.findPatientDetails(searchParams,patientRegistrationNumber,pageable);
+
+
+        // then
+        assertThat(result.getContent()).isEqualTo(patientDetailsResponses);
+        assertThat(result.getContent().get(0).getPatientRegistrationNumber()).isEqualTo(patientRegistrationNumber);
+        assertThat(result.getContent().get(0).getPatientGenderCode()).isEqualTo(patientDetailsResponse.getPatientGenderCode());
+        assertThat(result.getContent().get(0).getPatientPhoneNumber()).isEqualTo(patientDetailsResponse.getPatientPhoneNumber());
+        assertThat(result.getContent().get(0).getRecentVisit()).isEqualTo(String.valueOf(patientDetailsResponse.getRecentVisit()));
+    }
+
+    @Test
+    @DisplayName("환자 목록 조회 테스트, patientBirthDate 선택할 경우")
+    public void findPatientDetails_PatientBirthDate_Test() {
+
+        // given
+        String searchParams = "birth";
+        String patientBirthDate = "1995-01-01";
+        Pageable pageable = PageRequest.of(0, 2);
+
+        PatientDetailsResponse patientDetailsResponse = createPatientDetailsResponse();
+        List<PatientDetailsResponse> patientDetailsResponses = createPatientDetailListResponse(patientDetailsResponse);
+
+        // when
+        when(patientRepository.findByPatientDetails(eq(searchParams),eq(patientBirthDate),any(Pageable.class)))
+                .thenReturn(new PageImpl<>(patientDetailsResponses));
+
+        Page<PatientDetailsResponse> result = patientService.findPatientDetails(searchParams,patientBirthDate,pageable);
+
+        // then
+        assertThat(result.getContent()).isEqualTo(patientDetailsResponses);
+        assertThat(result.getContent().get(0).getPatientBirthDate()).isEqualTo(patientBirthDate);
+        assertThat(result.getContent().get(0).getPatientGenderCode()).isEqualTo(patientDetailsResponse.getPatientGenderCode());
+        assertThat(result.getContent().get(0).getPatientPhoneNumber()).isEqualTo(patientDetailsResponse.getPatientPhoneNumber());
+        assertThat(result.getContent().get(0).getRecentVisit()).isEqualTo(String.valueOf(patientDetailsResponse.getRecentVisit()));
+    }
+
+    private List<PatientDetailsResponse> createPatientDetailListResponse(PatientDetailsResponse patientDetailsResponse){
+        List<PatientDetailsResponse> patientDetailsResponses = new ArrayList<>();
+        patientDetailsResponses.add(patientDetailsResponse);
+        patientDetailsResponses.add(patientDetailsResponse);
+
+        return patientDetailsResponses;
+    }
+
+    private PatientDetailsResponse createPatientDetailsResponse() {
+        Long patientId = 1L;
+        String patientName = "환자";
+        String patientRegistrationNumber = "123456789";
+        String patientGenderCode = "M";
+        String patientBirthDate = "1995-01-01";
+        String patientPhoneNumber = "123-456-7890";
+        String visitDateTime = LocalDateTime.now().toLocalDate().toString();
+
+        return PatientDetailsResponse.builder()
+                .patientId(patientId)
+                .patientName(patientName)
+                .patientRegistrationNumber(patientRegistrationNumber)
+                .patientGenderCode(patientGenderCode)
+                .patientBirthDate(patientBirthDate)
+                .patientPhoneNumber(patientPhoneNumber)
+                .recentVisit(visitDateTime)
+                .build();
+    }
 }
+
