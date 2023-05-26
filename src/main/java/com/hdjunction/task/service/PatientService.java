@@ -5,6 +5,7 @@ import com.hdjunction.task.common.UuidGenerator;
 import com.hdjunction.task.domain.Hospital;
 import com.hdjunction.task.domain.Patient;
 import com.hdjunction.task.dto.CreatePatientRequest;
+import com.hdjunction.task.dto.PatientWithVisitsResponse;
 import com.hdjunction.task.dto.UpdatePatientRequest;
 import com.hdjunction.task.exception.ClientException;
 import com.hdjunction.task.exception.ErrorCode;
@@ -47,6 +48,10 @@ public class PatientService {
         Patient patient = findPatientId(patientId);
 
         patient.setDeleted();
+    }
+
+    public PatientWithVisitsResponse findPatientWithVisits(Long patientId) {
+        return patientRepository.findByIdWithVisits(patientId);
     }
 
     private Patient findPatientId(Long patientId){

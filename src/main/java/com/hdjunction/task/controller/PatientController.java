@@ -1,6 +1,7 @@
 package com.hdjunction.task.controller;
 
 import com.hdjunction.task.dto.CreatePatientRequest;
+import com.hdjunction.task.dto.PatientWithVisitsResponse;
 import com.hdjunction.task.dto.UpdatePatientRequest;
 import com.hdjunction.task.service.PatientService;
 import lombok.RequiredArgsConstructor;
@@ -52,4 +53,11 @@ public class PatientController {
                 .build();
     }
 
+    @GetMapping("/{patientId}/patients")
+    public ResponseEntity<PatientWithVisitsResponse> findPatientWithVisits(
+            @PathVariable Long patientId) {
+
+        return ResponseEntity
+                .ok(patientService.findPatientWithVisits(patientId));
+    }
 }
