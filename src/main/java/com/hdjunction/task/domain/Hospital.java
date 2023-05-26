@@ -1,6 +1,7 @@
 package com.hdjunction.task.domain;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -35,5 +36,15 @@ public class Hospital extends BaseTime{
 
     public static Hospital of(){
         return new Hospital();
+    }
+
+    @Builder
+    public Hospital(Long id, String name, String sanatoriumNumber, String director, List<Patient> patients, List<Visit> visits) {
+        this.id = id;
+        this.name = name;
+        this.sanatoriumNumber = sanatoriumNumber;
+        this.director = director;
+        this.patients = patients;
+        this.visits = visits;
     }
 }

@@ -4,7 +4,10 @@ import com.hdjunction.task.common.DomainType;
 import com.hdjunction.task.common.UuidGenerator;
 import com.hdjunction.task.domain.Hospital;
 import com.hdjunction.task.domain.Patient;
+import com.hdjunction.task.domain.Visit;
 import com.hdjunction.task.dto.CreatePatientRequest;
+import com.hdjunction.task.dto.PatientWithVisitsResponse;
+import com.hdjunction.task.dto.PatientWithVisitsResponse.VisitDetailsDTO;
 import com.hdjunction.task.dto.UpdatePatientRequest;
 import com.hdjunction.task.exception.ClientException;
 import com.hdjunction.task.exception.ErrorCode;
@@ -25,13 +28,15 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -207,4 +212,66 @@ public class PatientServiceTest {
         verify(patientRepository, Mockito.times(1)).findByIdAndDeletedFalse(patientId);
     }
 
+
+    @Test
+    @DisplayName("환자 조회")
+    public void findPatientWithVisitsTest() {
+        // given
+        Long patientId = 1L;
+        String patientName = "환자";
+        String patientRegistrationNumber = "123456789";
+        String patientGenderCode = "M";
+        String patientBirthDate = "1995-01-01";
+        String patientPhoneNumber = "123-456-7890";
+
+        Hospital hospital = Hospital.builder()
+                .id(1L)
+                .name("병원")
+                .sanatoriumNumber("12345")
+                .director("병원장")
+                .build();
+
+        Long visitId = 1L;
+        LocalDateTime visitRegistrationDateTime = LocalDateTime.now();
+        String visitStatusCode = "방문코드";
+
+        Visit visit = Visit.builder()
+                .id(visitId)
+                .hospital(hospital)
+                .registrationDateTime(visitRegistrationDateTime)
+                .statusCode(visitStatusCode)
+                .build();
+
+        List<Visit> visits = new ArrayList<>();
+        visits.add(visit);
+
+        Patient patient = Patient.builder()
+                .id(patientId)
+                .name(patientName)
+                .registrationNumber(patientRegistrationNumber)
+                .genderCode(patientGenderCode)
+                .birthDate(patientBirthDate)
+                .phoneNumber(patientPhoneNumber)
+                .visits(visits)
+                .build();
+
+        // when
+        when(patientRepository.findByIdWithVisits(anyLong())).thenReturn(PatientWithVisitsResponse.fromPatientWithVisitsResponse(patient));
+
+        PatientWithVisitsResponse response = patientService.findPatientWithVisits(patientId);
+
+        // then
+        Assertions.assertEquals(patientId, response.getPatientId());
+        Assertions.assertEquals(patientName, response.getPatientName());
+        Assertions.assertEquals(patientRegistrationNumber, response.getPatientRegistrationNumber());
+        Assertions.assertEquals(patientGenderCode, response.getPatientGenderCode());
+        Assertions.assertEquals(patientBirthDate, response.getPatientBirthDate());
+        Assertions.assertEquals(patientPhoneNumber, response.getPatientPhoneNumber());
+        Assertions.assertEquals(1, response.getVisitDetails().size());
+        VisitDetailsDTO visitDetails = response.getVisitDetails().get(0);
+        Assertions.assertEquals(visitId, visitDetails.getVisitId());
+        Assertions.assertEquals(String.valueOf(visitRegistrationDateTime), visitDetails.getVisitRegistrationDateTime());
+        Assertions.assertEquals(visitStatusCode, visitDetails.getVisitStatusCode());
+
+    }
 }

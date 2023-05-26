@@ -1,6 +1,7 @@
 package com.hdjunction.task.domain;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -33,4 +34,12 @@ public class Visit extends BaseTime{
     @Column(name = "visit_status_code", length = 10, nullable = false)
     private String statusCode;
 
+    @Builder
+    public Visit(Long id, Hospital hospital, Patient patient, LocalDateTime registrationDateTime, String statusCode) {
+        this.id = id;
+        this.hospital = hospital;
+        this.patient = patient;
+        this.registrationDateTime = registrationDateTime;
+        this.statusCode = statusCode;
+    }
 }
