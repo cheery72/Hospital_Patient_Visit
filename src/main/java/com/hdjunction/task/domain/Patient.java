@@ -11,6 +11,11 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(indexes = {
+        @Index(name = "idx_patient_name", columnList = "patient_name"),
+        @Index(name = "idx_patient_registration_number", columnList = "patient_registration_number"),
+        @Index(name = "idx_birth_date", columnList = "birth_date")
+})
 public class Patient extends BaseTime{
 
     @Id
@@ -31,7 +36,7 @@ public class Patient extends BaseTime{
     @Column(length = 10, nullable = false)
     private String genderCode;
 
-    @Column(length = 10)
+    @Column(name = "birth_date", length = 10)
     private String birthDate;
 
     @Column(length = 20)

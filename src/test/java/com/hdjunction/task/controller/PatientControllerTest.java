@@ -11,9 +11,9 @@ import com.hdjunction.task.service.PatientService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
@@ -21,9 +21,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.RestDocumentationContextProvider;
+import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
@@ -36,13 +36,19 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.modifyUris;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@AutoConfigureMockMvc
+@ExtendWith(RestDocumentationExtension.class)
+@SpringBootTest
 class PatientControllerTest {
 
     @Autowired
@@ -62,10 +68,16 @@ class PatientControllerTest {
     private final Long patientId = 1L;
 
     @BeforeEach()
-    public void setup() {
+    public void setup(RestDocumentationContextProvider restDocumentationContextProvider) {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(ctx)
                 .addFilters(new CharacterEncodingFilter("UTF-8", true))
                 .alwaysDo(print())
+                .apply(documentationConfiguration(restDocumentationContextProvider)
+                        .operationPreprocessors()
+                        .withRequestDefaults(
+                                modifyUris().scheme("https").host("docs.api.com").removePort(), prettyPrint())
+                        .withResponseDefaults(prettyPrint())
+                )
                 .build();
     }
 
@@ -82,10 +94,21 @@ class PatientControllerTest {
 
         doNothing().when(patientService).createPatient(any(), any());
 
-        mockMvc.perform(post(BASE_URL+hospitalId+"/patients")
+        mockMvc.perform(post(BASE_URL+"{hospitalId}"+"/patients",hospitalId)
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andDo(document("create-patient",
+                        pathParameters(
+                                parameterWithName("hospitalId").description("병원 ID")
+                        ),
+                        requestFields(
+                                fieldWithPath("patientName").description("환자 이름"),
+                                fieldWithPath("genderCode").description("환자 성별코드"),
+                                fieldWithPath("birthDate").description("환자 생년월일"),
+                                fieldWithPath("phoneNumber").description("환자 핸드폰 번호")
+                        )
+                ));
     }
 
     @Test
@@ -101,10 +124,21 @@ class PatientControllerTest {
 
         doNothing().when(patientService).createPatient(any(), any());
 
-        mockMvc.perform(post(BASE_URL+hospitalId+"/patients")
+        mockMvc.perform(post(BASE_URL+"{hospitalId}"+"/patients",hospitalId)
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andDo(document("create-patient-fail-name-null",
+                        pathParameters(
+                                parameterWithName("hospitalId").description("병원 ID")
+                        ),
+                        requestFields(
+                                fieldWithPath("patientName").description("환자 이름"),
+                                fieldWithPath("genderCode").description("환자 성별코드"),
+                                fieldWithPath("birthDate").description("환자 생년월일"),
+                                fieldWithPath("phoneNumber").description("환자 핸드폰 번호")
+                        )
+                ));
     }
 
     @Test
@@ -120,10 +154,21 @@ class PatientControllerTest {
 
         doNothing().when(patientService).createPatient(any(), any());
 
-        mockMvc.perform(post(BASE_URL+hospitalId+"/patients")
+        mockMvc.perform(post(BASE_URL+"{hospitalId}"+"/patients",hospitalId)
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andDo(document("create-patient-fail-genderCode-null",
+                        pathParameters(
+                                parameterWithName("hospitalId").description("병원 ID")
+                        ),
+                        requestFields(
+                                fieldWithPath("patientName").description("환자 이름"),
+                                fieldWithPath("genderCode").description("환자 성별코드"),
+                                fieldWithPath("birthDate").description("환자 생년월일"),
+                                fieldWithPath("phoneNumber").description("환자 핸드폰 번호")
+                        )
+                ));
     }
 
     @Test
@@ -139,10 +184,21 @@ class PatientControllerTest {
 
         doNothing().when(patientService).updatePatient(any(), any());
 
-        mockMvc.perform(patch(BASE_URL+patientId+"/patients")
+        mockMvc.perform(patch(BASE_URL+"{patientId}"+"/patients",patientId)
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNoContent())
+                .andDo(document("update-patient-success",
+                        pathParameters(
+                                parameterWithName("patientId").description("환자 ID")
+                        ),
+                        requestFields(
+                                fieldWithPath("patientName").description("환자 이름"),
+                                fieldWithPath("genderCode").description("환자 성별코드"),
+                                fieldWithPath("birthDate").description("환자 생년월일"),
+                                fieldWithPath("phoneNumber").description("환자 핸드폰 번호")
+                        )
+                ));
     }
 
 
@@ -159,10 +215,21 @@ class PatientControllerTest {
 
         doNothing().when(patientService).updatePatient(any(), any());
 
-        mockMvc.perform(patch(BASE_URL+patientId+"/patients")
+        mockMvc.perform(patch(BASE_URL+"{patientId}"+"/patients",patientId)
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andDo(document("update-patient-fail-empty",
+                        pathParameters(
+                                parameterWithName("patientId").description("환자 ID")
+                        ),
+                        requestFields(
+                                fieldWithPath("patientName").description("환자 이름"),
+                                fieldWithPath("genderCode").description("환자 성별코드"),
+                                fieldWithPath("birthDate").description("환자 생년월일"),
+                                fieldWithPath("phoneNumber").description("환자 핸드폰 번호")
+                        )
+                ));
     }
 
     @Test
@@ -178,10 +245,21 @@ class PatientControllerTest {
 
         doNothing().when(patientService).updatePatient(any(), any());
 
-        mockMvc.perform(patch(BASE_URL+patientId+"/patients")
+        mockMvc.perform(patch(BASE_URL+"{patientId}"+"/patients",patientId)
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andDo(document("update-patient-fail-empty",
+                        pathParameters(
+                                parameterWithName("patientId").description("환자 ID")
+                        ),
+                        requestFields(
+                                fieldWithPath("patientName").description("환자 이름"),
+                                fieldWithPath("genderCode").description("환자 성별코드"),
+                                fieldWithPath("birthDate").description("환자 생년월일"),
+                                fieldWithPath("phoneNumber").description("환자 핸드폰 번호")
+                        )
+                ));
     }
 
     @Test
@@ -190,8 +268,14 @@ class PatientControllerTest {
 
         doNothing().when(patientService).deletePatient(any());
 
-        mockMvc.perform(delete(BASE_URL+patientId+"/patients"))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete(BASE_URL+"{patientId}"+"/patients",patientId))
+                .andExpect(status().isNoContent())
+                .andDo(document("patient-set-deleted",
+                        pathParameters(
+                                parameterWithName("patientId").description("환자 ID")
+                        )
+                ));
+
     }
 
     @Test
@@ -233,9 +317,9 @@ class PatientControllerTest {
         when(patientService.findPatientWithVisits(patientId)).thenReturn(response);
 
         // then
-        mockMvc.perform(MockMvcRequestBuilders.get(BASE_URL+"/{patientId}/patients", patientId)
+        mockMvc.perform(get(BASE_URL+"/{patientId}/patients", patientId)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.patientId").value(patientId))
                 .andExpect(jsonPath("$.patientName").value(patientName))
                 .andExpect(jsonPath("$.patientRegistrationNumber").value(patientRegistrationNumber))
@@ -246,7 +330,24 @@ class PatientControllerTest {
                 .andExpect(jsonPath("$.visitDetails[0].visitHospitalName").value(hospital.getName()))
                 .andExpect(jsonPath("$.visitDetails[0].visitRegistrationDateTime").value(visitRegistrationDateTime.toString()))
                 .andExpect(jsonPath("$.visitDetails[0].visitStatusCode").value(visitStatusCode))
-                .andDo(print());
+                .andDo(print())
+                .andDo(document("find-patient-with-visits",
+                        pathParameters(
+                                parameterWithName("patientId").description("환자 ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("patientId").description("환자 ID"),
+                                fieldWithPath("patientName").description("환자명"),
+                                fieldWithPath("patientRegistrationNumber").description("환자 등록번호"),
+                                fieldWithPath("patientGenderCode").description("환자 성별코드"),
+                                fieldWithPath("patientBirthDate").description("환자 생년월일"),
+                                fieldWithPath("patientPhoneNumber").description("환자 핸드폰번호"),
+                                fieldWithPath("visitDetails[].visitId").description("환자 방문 ID"),
+                                fieldWithPath("visitDetails[].visitHospitalName").description("환자 방문 병원 이름"),
+                                fieldWithPath("visitDetails[].visitRegistrationDateTime").description("환자 방문 날짜"),
+                                fieldWithPath("visitDetails[].visitStatusCode").description("환자 방문 상태 코드")
+                        )
+                ));
     }
 
     @Test
@@ -297,7 +398,44 @@ class PatientControllerTest {
                 .andExpect(jsonPath("$.content[0].patientName").value(patientName))
                 .andExpect(jsonPath("$.content[0].patientPhoneNumber").value(patientPhoneNumber))
                 .andExpect(jsonPath("$.content[0].recentVisit").value(String.valueOf(visitDateTime.toLocalDate())))
-                .andReturn();
+                .andDo(document("find-patient-details",
+                        pathParameters(
+                                parameterWithName("searchParams").description("검색 유형")
+                        ),
+                        requestParameters(
+                                parameterWithName("content").description("검색 내용"),
+                                parameterWithName("page").description("요청할 페이지 번호"),
+                                parameterWithName("size").description("한 페이지 요청할 개수")
+                        ),
+                        responseFields(
+                                fieldWithPath("totalElements").description("요청 페이지까지의 데이터 개수"),
+                                fieldWithPath("totalPages").description("요청 페이지 번호"),
+                                fieldWithPath("size").description("요청 데이터 개수"),
+                                fieldWithPath("number").description("요청 데이터 개수"),
+                                fieldWithPath("content[].patientId").description("환자 ID"),
+                                fieldWithPath("content[].patientName").description("환자 이름"),
+                                fieldWithPath("content[].patientRegistrationNumber").description("환자 등록번호"),
+                                fieldWithPath("content[].patientGenderCode").description("환자 성별 코드"),
+                                fieldWithPath("content[].patientBirthDate").description("환자 생년월일"),
+                                fieldWithPath("content[].patientPhoneNumber").description("환자 핸드폰번호"),
+                                fieldWithPath("content[].recentVisit").description("환자 최근 병원 방문 날짜"),
+                                fieldWithPath("pageable.sort.empty").ignored(),
+                                fieldWithPath("pageable.sort.sorted").ignored(),
+                                fieldWithPath("pageable.sort.unsorted").ignored(),
+                                fieldWithPath("pageable.offset").ignored(),
+                                fieldWithPath("pageable.pageNumber").description("요청 페이지 번호"),
+                                fieldWithPath("pageable.pageSize").description("요청 데이터 개수"),
+                                fieldWithPath("pageable.paged").ignored(),
+                                fieldWithPath("pageable.unpaged").ignored(),
+                                fieldWithPath("last").ignored(),
+                                fieldWithPath("sort.empty").ignored(),
+                                fieldWithPath("sort.sorted").ignored(),
+                                fieldWithPath("sort.unsorted").ignored(),
+                                fieldWithPath("first").ignored(),
+                                fieldWithPath("numberOfElements").ignored(),
+                                fieldWithPath("empty").ignored()
+                        )
+                ));
     }
 
 }
