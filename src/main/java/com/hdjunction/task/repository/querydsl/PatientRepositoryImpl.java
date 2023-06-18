@@ -56,7 +56,7 @@ public class PatientRepositoryImpl implements PatientRepositoryCustom{
                 ))
                 .from(qPatient)
                 .leftJoin(qPatient.visits, qVisit)
-                .where(booleanBuilder)
+                .where(booleanBuilder.and(qPatient.deleted.eq(false)))
                 .groupBy(
                         qPatient.id,
                         qPatient.name,
@@ -76,18 +76,22 @@ public class PatientRepositoryImpl implements PatientRepositoryCustom{
     private BooleanBuilder getBooleanBuilder(String searchParams, String content) {
         BooleanBuilder booleanBuilder = new BooleanBuilder();
 
+        if (content.isBlank()){
+            return booleanBuilder;
+        }
+
         if ("name".equals(searchParams)) {
-            booleanBuilder.and(qPatient.deleted.eq(false)).and(qPatient.name.eq(content));
+            booleanBuilder.and(qPatient.name.eq(content));
             return booleanBuilder;
         }
 
         if ("registration".equals(searchParams)) {
-            booleanBuilder.and(qPatient.deleted.eq(false)).and(qPatient.registrationNumber.eq(content));
+            booleanBuilder.and(qPatient.registrationNumber.eq(content));
             return booleanBuilder;
         }
 
         if ("birth".equals(searchParams)) {
-            booleanBuilder.and(qPatient.deleted.eq(false)).and(qPatient.birthDate.eq(content));
+            booleanBuilder.and(qPatient.birthDate.eq(content));
         }
 
         return booleanBuilder;
