@@ -13,4 +13,10 @@ public class GlobalExceptionHandler {
         final ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode());
         return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(errorResponse);
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> defaultHandleException(ClientException e) {
+        final ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode());
+        return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(errorResponse);
+    }
 }
