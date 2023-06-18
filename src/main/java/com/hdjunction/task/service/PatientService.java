@@ -67,13 +67,14 @@ public class PatientService {
     }
 
     private String generateUniqueRegistrationNumber() {
-        String registrationNumber;
+        String registrationNumber = UuidGenerator.generateUuid(DomainType.P);
 
-        do {
-            registrationNumber = UuidGenerator.generateUuid(DomainType.P);
-        } while (isPatientExistByRegistrationNumber(registrationNumber));
+        if(isPatientExistByRegistrationNumber(registrationNumber)){
+            return registrationNumber;
+        }
 
-        return registrationNumber;
+        throw new ClientException(ErrorCode.FAILED_CREATE_PROCESS);
+
     }
 
     private Hospital findHospitalById(Long hospitalId){
@@ -86,7 +87,7 @@ public class PatientService {
     }
 
     private boolean isPatientExistByRegistrationNumber(String registrationNumber) {
-        return findPatientByRegistrationNumber(registrationNumber).isPresent();
+        return findPatientByRegistrationNumber(registrationNumber).isEmpty();
     }
 
 }
