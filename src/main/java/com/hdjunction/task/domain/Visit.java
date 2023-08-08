@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Table(name = "patient_visit")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Visit extends BaseTime{
+public class Visit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,15 +31,19 @@ public class Visit extends BaseTime{
     @CreatedDate
     private LocalDateTime registrationDateTime;
 
-    @Column(name = "visit_status_code", length = 10, nullable = false)
-    private String statusCode;
-
     @Builder
-    public Visit(Long id, Hospital hospital, Patient patient, LocalDateTime registrationDateTime, String statusCode) {
+    public Visit(Long id, Hospital hospital, Patient patient, LocalDateTime registrationDateTime) {
         this.id = id;
         this.hospital = hospital;
         this.patient = patient;
         this.registrationDateTime = registrationDateTime;
-        this.statusCode = statusCode;
+    }
+
+    public static Visit fromVisit(Hospital hospital, Patient patient) {
+        return Visit.builder()
+                .hospital(hospital)
+                .patient(patient)
+                .registrationDateTime(LocalDateTime.now())
+                .build();
     }
 }

@@ -29,9 +29,6 @@ public class Hospital extends BaseTime{
     private String director;
 
     @OneToMany(mappedBy = "hospital")
-    private List<Patient> patients = new ArrayList<>();
-
-    @OneToMany(mappedBy = "hospital")
     private List<Visit> visits = new ArrayList<>();
 
     public static Hospital of(){
@@ -39,12 +36,11 @@ public class Hospital extends BaseTime{
     }
 
     @Builder
-    public Hospital(Long id, String name, String sanatoriumNumber, String director, List<Patient> patients, List<Visit> visits) {
+    public Hospital(Long id, String name, String sanatoriumNumber, String director, List<Visit> visits) {
         this.id = id;
         this.name = name;
         this.sanatoriumNumber = sanatoriumNumber;
         this.director = director;
-        this.patients = patients;
         this.visits = visits;
     }
 }

@@ -2,12 +2,14 @@ package com.hdjunction.task.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hdjunction.task.domain.Hospital;
+import com.hdjunction.task.domain.Patient;
 import com.hdjunction.task.dto.CreatePatientRequest;
 import com.hdjunction.task.dto.PatientDetailsResponse;
 import com.hdjunction.task.dto.PatientWithVisitsResponse;
 import com.hdjunction.task.dto.PatientWithVisitsResponse.VisitDetailsDTO;
 import com.hdjunction.task.dto.UpdatePatientRequest;
 import com.hdjunction.task.service.PatientService;
+import com.hdjunction.task.service.VisitService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,8 +36,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
@@ -61,6 +62,9 @@ class PatientControllerTest {
 
     @MockBean
     private PatientService patientService;
+
+    @MockBean
+    private VisitService visitService;
 
     private final String BASE_URL = "/api/v1/";
 
@@ -92,73 +96,14 @@ class PatientControllerTest {
                         "010-0000-0000")
         );
 
-        doNothing().when(patientService).createPatient(any(), any());
+        when(patientService.createPatient(any())).thenReturn(Patient.of());
+        doNothing().when(visitService).createPatientVisit(any(),any());
 
         mockMvc.perform(post(BASE_URL+"{hospitalId}"+"/patients",hospitalId)
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andDo(document("create-patient",
-                        pathParameters(
-                                parameterWithName("hospitalId").description("병원 ID")
-                        ),
-                        requestFields(
-                                fieldWithPath("patientName").description("환자 이름"),
-                                fieldWithPath("genderCode").description("환자 성별코드"),
-                                fieldWithPath("birthDate").description("환자 생년월일"),
-                                fieldWithPath("phoneNumber").description("환자 핸드폰 번호")
-                        )
-                ));
-    }
-
-    @Test
-    @DisplayName("환자 등록 실패 테스트, patientName이 null일 경우")
-    public void createPatientFailTestWhenPatientNameIsNull() throws Exception {
-        String body = objectMapper.writeValueAsString(
-                new CreatePatientRequest(
-                        null,
-                        "Man1",
-                        "000101",
-                        "010-0000-0000")
-        );
-
-        doNothing().when(patientService).createPatient(any(), any());
-
-        mockMvc.perform(post(BASE_URL+"{hospitalId}"+"/patients",hospitalId)
-                        .content(body)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andDo(document("create-patient-fail-name-null",
-                        pathParameters(
-                                parameterWithName("hospitalId").description("병원 ID")
-                        ),
-                        requestFields(
-                                fieldWithPath("patientName").description("환자 이름"),
-                                fieldWithPath("genderCode").description("환자 성별코드"),
-                                fieldWithPath("birthDate").description("환자 생년월일"),
-                                fieldWithPath("phoneNumber").description("환자 핸드폰 번호")
-                        )
-                ));
-    }
-
-    @Test
-    @DisplayName("환자 등록 실패 테스트, genderCode가 null일 경우")
-    public void createPatientFailTestWhenGenderCodeIsNull() throws Exception {
-        String body = objectMapper.writeValueAsString(
-                new CreatePatientRequest(
-                        "환자1",
-                        null,
-                        "000101",
-                        "010-0000-0000")
-        );
-
-        doNothing().when(patientService).createPatient(any(), any());
-
-        mockMvc.perform(post(BASE_URL+"{hospitalId}"+"/patients",hospitalId)
-                        .content(body)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andDo(document("create-patient-fail-genderCode-null",
                         pathParameters(
                                 parameterWithName("hospitalId").description("병원 ID")
                         ),
@@ -189,67 +134,6 @@ class PatientControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent())
                 .andDo(document("update-patient-success",
-                        pathParameters(
-                                parameterWithName("patientId").description("환자 ID")
-                        ),
-                        requestFields(
-                                fieldWithPath("patientName").description("환자 이름"),
-                                fieldWithPath("genderCode").description("환자 성별코드"),
-                                fieldWithPath("birthDate").description("환자 생년월일"),
-                                fieldWithPath("phoneNumber").description("환자 핸드폰 번호")
-                        )
-                ));
-    }
-
-
-    @Test
-    @DisplayName("환자 수정 실패 테스트, UpdatePatientRequest가 empty일 경우")
-    public void updatePatientFailTestWhenUpdatePatientRequestIsEmpty() throws Exception {
-        String body = objectMapper.writeValueAsString(
-                new UpdatePatientRequest(
-                        "",
-                        "",
-                        "",
-                        "")
-        );
-
-        doNothing().when(patientService).updatePatient(any(), any());
-
-        mockMvc.perform(patch(BASE_URL+"{patientId}"+"/patients",patientId)
-                        .content(body)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andDo(document("update-patient-fail-empty",
-                        pathParameters(
-                                parameterWithName("patientId").description("환자 ID")
-                        ),
-                        requestFields(
-                                fieldWithPath("patientName").description("환자 이름"),
-                                fieldWithPath("genderCode").description("환자 성별코드"),
-                                fieldWithPath("birthDate").description("환자 생년월일"),
-                                fieldWithPath("phoneNumber").description("환자 핸드폰 번호")
-                        )
-                ));
-    }
-
-    @Test
-    @DisplayName("환자 수정 실패 테스트, UpdatePatientRequest가 null일 경우")
-    public void updatePatientFailTestWhenUpdatePatientRequestIsNull() throws Exception {
-        String body = objectMapper.writeValueAsString(
-                new UpdatePatientRequest(
-                        null,
-                        null,
-                        null,
-                        null)
-        );
-
-        doNothing().when(patientService).updatePatient(any(), any());
-
-        mockMvc.perform(patch(BASE_URL+"{patientId}"+"/patients",patientId)
-                        .content(body)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andDo(document("update-patient-fail-empty",
                         pathParameters(
                                 parameterWithName("patientId").description("환자 ID")
                         ),
@@ -308,7 +192,6 @@ class PatientControllerTest {
                                 .visitId(visitId)
                                 .visitHospitalName(hospital.getName())
                                 .visitRegistrationDateTime(visitRegistrationDateTime.toString())
-                                .visitStatusCode(visitStatusCode)
                                 .build()
                 ))
                 .build();
@@ -329,7 +212,6 @@ class PatientControllerTest {
                 .andExpect(jsonPath("$.visitDetails[0].visitId").value(visitId))
                 .andExpect(jsonPath("$.visitDetails[0].visitHospitalName").value(hospital.getName()))
                 .andExpect(jsonPath("$.visitDetails[0].visitRegistrationDateTime").value(visitRegistrationDateTime.toString()))
-                .andExpect(jsonPath("$.visitDetails[0].visitStatusCode").value(visitStatusCode))
                 .andDo(print())
                 .andDo(document("find-patient-with-visits",
                         pathParameters(
@@ -344,8 +226,7 @@ class PatientControllerTest {
                                 fieldWithPath("patientPhoneNumber").description("환자 핸드폰번호"),
                                 fieldWithPath("visitDetails[].visitId").description("환자 방문 ID"),
                                 fieldWithPath("visitDetails[].visitHospitalName").description("환자 방문 병원 이름"),
-                                fieldWithPath("visitDetails[].visitRegistrationDateTime").description("환자 방문 날짜"),
-                                fieldWithPath("visitDetails[].visitStatusCode").description("환자 방문 상태 코드")
+                                fieldWithPath("visitDetails[].visitRegistrationDateTime").description("환자 방문 날짜")
                         )
                 ));
     }

@@ -4,6 +4,7 @@ import com.hdjunction.task.common.DomainType;
 import com.hdjunction.task.common.UuidGenerator;
 import com.hdjunction.task.domain.Hospital;
 import com.hdjunction.task.domain.Patient;
+import com.hdjunction.task.domain.Visit;
 import com.hdjunction.task.dto.CreatePatientRequest;
 import com.hdjunction.task.dto.PatientDetailsResponse;
 import com.hdjunction.task.dto.PatientWithVisitsResponse;
@@ -12,6 +13,7 @@ import com.hdjunction.task.exception.ClientException;
 import com.hdjunction.task.exception.ErrorCode;
 import com.hdjunction.task.repository.HospitalRepository;
 import com.hdjunction.task.repository.PatientRepository;
+import com.hdjunction.task.repository.VisitRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,18 +28,16 @@ import java.util.Optional;
 public class PatientService {
 
     private final PatientRepository patientRepository;
-    private final HospitalRepository hospitalRepository;
 
     @Transactional
-    public void createPatient(Long hospitalId, CreatePatientRequest createPatientRequest) {
-        Hospital hospital = findHospitalById(hospitalId);
-
+    public Patient createPatient(CreatePatientRequest createPatientRequest) {
         String registrationNumber = generateUniqueRegistrationNumber();
 
-        Patient patient = Patient.of(createPatientRequest, hospital, registrationNumber);
+        Patient patient = Patient.of(createPatientRequest, registrationNumber);
 
-        patientRepository.save(patient);
+        return patientRepository.save(patient);
     }
+
 
     @Transactional
     public void updatePatient(Long patientId, UpdatePatientRequest updatePatientRequest) {
@@ -75,11 +75,6 @@ public class PatientService {
 
         throw new ClientException(ErrorCode.FAILED_CREATE_PROCESS);
 
-    }
-
-    private Hospital findHospitalById(Long hospitalId){
-        return hospitalRepository.findById(hospitalId)
-                .orElseThrow(() -> new ClientException(ErrorCode.NOT_FOUND_HOSPITAL));
     }
 
     private Optional<Patient> findPatientByRegistrationNumber(String randomString){

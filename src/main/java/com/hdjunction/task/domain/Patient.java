@@ -23,10 +23,6 @@ public class Patient extends BaseTime{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hospital_id")
-    private Hospital hospital;
-
     @Column(name = "patient_name", length = 45, nullable = false)
     private String name;
 
@@ -48,9 +44,8 @@ public class Patient extends BaseTime{
     private boolean deleted = false;
 
     @Builder
-    public Patient(Long id, Hospital hospital, String name, String registrationNumber, String genderCode, String birthDate, String phoneNumber, List<Visit> visits, boolean deleted) {
+    public Patient(Long id, String name, String registrationNumber, String genderCode, String birthDate, String phoneNumber, List<Visit> visits, boolean deleted) {
         this.id = id;
-        this.hospital = hospital;
         this.name = name;
         this.registrationNumber = registrationNumber;
         this.genderCode = genderCode;
@@ -60,9 +55,8 @@ public class Patient extends BaseTime{
         this.deleted = deleted;
     }
 
-    public static Patient of(CreatePatientRequest createPatientRequest, Hospital hospital, String registrationNumber) {
+    public static Patient of(CreatePatientRequest createPatientRequest, String registrationNumber) {
         return Patient.builder()
-                .hospital(hospital)
                 .name(createPatientRequest.getPatientName())
                 .registrationNumber(registrationNumber)
                 .genderCode(createPatientRequest.getGenderCode())

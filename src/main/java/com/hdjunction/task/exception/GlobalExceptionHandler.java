@@ -1,5 +1,6 @@
 package com.hdjunction.task.exception;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,8 +16,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> defaultHandleException(ClientException e) {
-        final ErrorResponse errorResponse = new ErrorResponse(e.getErrorCode());
-        return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(errorResponse);
+    public ResponseEntity<String> defaultHandleException(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unknown error occurred");
     }
 }

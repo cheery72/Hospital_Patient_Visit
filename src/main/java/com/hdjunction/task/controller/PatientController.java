@@ -1,10 +1,12 @@
 package com.hdjunction.task.controller;
 
+import com.hdjunction.task.domain.Patient;
 import com.hdjunction.task.dto.CreatePatientRequest;
 import com.hdjunction.task.dto.PatientDetailsResponse;
 import com.hdjunction.task.dto.PatientWithVisitsResponse;
 import com.hdjunction.task.dto.UpdatePatientRequest;
 import com.hdjunction.task.service.PatientService;
+import com.hdjunction.task.service.VisitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,13 +22,16 @@ import javax.validation.Valid;
 public class PatientController {
 
     private final PatientService patientService;
+    private final VisitService visitService;
 
     @PostMapping("/{hospitalId}/patients")
     public ResponseEntity<Object> createPatient(
             @PathVariable Long hospitalId,
             @RequestBody @Valid CreatePatientRequest createPatientRequest) {
 
-        patientService.createPatient(hospitalId, createPatientRequest);
+        Patient patient = patientService.createPatient(createPatientRequest);
+
+        visitService.createPatientVisit(hospitalId, patient);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

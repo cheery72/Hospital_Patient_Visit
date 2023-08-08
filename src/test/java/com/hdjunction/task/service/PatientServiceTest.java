@@ -76,11 +76,11 @@ public class PatientServiceTest {
         Patient patient = Patient.of();
 
         // when
-        when(hospitalRepository.findById(any())).thenReturn(Optional.of(hospital));
         when(patientRepository.findByRegistrationNumberAndDeletedFalse(anyString())).thenReturn(Optional.empty());
         when(patientRepository.save(any(Patient.class))).thenReturn(patient);
 
-        patientService.createPatient(hospitalId,createPatientRequest);
+        patientService.createPatient(createPatientRequest);
+
 
         // then
         ArgumentCaptor<Patient> patientCaptor = ArgumentCaptor.forClass(Patient.class);
@@ -88,26 +88,8 @@ public class PatientServiceTest {
         Patient savedPatient = patientCaptor.getValue();
         assertTrue(savedPatient.getRegistrationNumber().startsWith("P_"));
         assertFalse(savedPatient.isDeleted());
-        verify(hospitalRepository).findById(hospitalId);
         verify(patientRepository).findByRegistrationNumberAndDeletedFalse(anyString());
         verify(patientRepository).save(any(Patient.class));
-    }
-
-    @Test
-    @DisplayName("요청 받은 병원을 찾을 수 없을 경우 exception 테스트")
-    public void findPatientNotFoundHospital_ExceptionTest() {
-        // given
-        Long hospitalId = 1L;
-
-        // when
-        when(hospitalRepository.findById(hospitalId)).thenReturn(Optional.empty());
-
-        ClientException exception = Assertions.assertThrows(ClientException.class,
-                () -> patientService.createPatient(hospitalId, createPatientRequest));
-
-        // then
-        assertEquals(ErrorCode.NOT_FOUND_HOSPITAL, exception.getErrorCode());
-        verify(hospitalRepository, Mockito.times(1)).findById(hospitalId);
     }
 
     @Test
@@ -244,7 +226,6 @@ public class PatientServiceTest {
                 .id(visitId)
                 .hospital(hospital)
                 .registrationDateTime(visitRegistrationDateTime)
-                .statusCode(visitStatusCode)
                 .build();
 
         List<Visit> visits = new ArrayList<>();
@@ -276,7 +257,6 @@ public class PatientServiceTest {
         VisitDetailsDTO visitDetails = response.getVisitDetails().get(0);
         Assertions.assertEquals(visitId, visitDetails.getVisitId());
         Assertions.assertEquals(String.valueOf(visitRegistrationDateTime), visitDetails.getVisitRegistrationDateTime());
-        Assertions.assertEquals(visitStatusCode, visitDetails.getVisitStatusCode());
 
     }
 

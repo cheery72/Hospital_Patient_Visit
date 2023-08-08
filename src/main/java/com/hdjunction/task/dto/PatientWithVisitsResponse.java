@@ -58,14 +58,12 @@ public class PatientWithVisitsResponse {
         private final Long visitId;
         private final String visitHospitalName;
         private final String visitRegistrationDateTime;
-        private final String visitStatusCode;
 
         @Builder
-        public VisitDetailsDTO(Long visitId, String visitHospitalName, String visitRegistrationDateTime, String visitStatusCode) {
+        public VisitDetailsDTO(Long visitId, String visitHospitalName, String visitRegistrationDateTime) {
             this.visitId = visitId;
             this.visitHospitalName = visitHospitalName;
             this.visitRegistrationDateTime = visitRegistrationDateTime;
-            this.visitStatusCode = visitStatusCode;
         }
 
         public static List<VisitDetailsDTO> fromVisitDetails(List<Visit> visits){
@@ -75,7 +73,6 @@ public class PatientWithVisitsResponse {
                             .visitId(v.getId())
                             .visitHospitalName(String.valueOf(v.getHospital()))
                             .visitRegistrationDateTime(String.valueOf(v.getRegistrationDateTime()))
-                            .visitStatusCode(v.getStatusCode())
                             .build()))
                     .collect(Collectors.toList());
         }
